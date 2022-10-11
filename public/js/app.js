@@ -16,6 +16,7 @@ function appendElement(target, elementName, content, id) {
 
 function appendContact(contact) {
   const tableEntry = appendElement(contactsTableElement, "tr");
+  contact.tableEntry = tableEntry;
   contact.nameElement = appendElement(tableEntry, "td", contact.name);
   contact.phoneElement = appendElement(tableEntry, "td", contact.phone);
   appendElement(tableEntry, "td", contact.email);
@@ -64,6 +65,11 @@ function deleteContact(contact) {
 }
 
 function loadContacts() {
+  currentlyEditing = null;
+  contacts.forEach((contact) => {
+    if (contact.tableEntry) contact.tableEntry.remove();
+  });
+
   fetch("/contacts")
     .then((res) => res.json())
     .then((json) => {
