@@ -8,21 +8,32 @@ app.use(express.static("public"));
 app.use(express.json());
 
 app.get("/contacts", (req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.send(contactsJson());
+  res.status(200).send(contactsJson());
 });
 
 app.post("/contacts", (req, res) => {
-  if (isValidContact(req.body)) {
+  if (isValidContact(req.body) && !contacts.has(req.body.email)) {
     const name = req.body.name;
     const phone = req.body.phone;
     const email = req.body.email;
     contacts.set(email, { name: name, phone: phone, email: email });
-    res.status(200);
-    res.end();
+    res.status(200).send(contactsJson());
   } else {
-    res.status(400);
-    res.send("Request must contain a name, phonenumber and email.");
+    res.sendStatus(400);
+  }
+});
+
+app.patch("/contacts", (req, res) => {
+  const email = req.body.email;
+  const contact = contacts.get(email);
+  if (email && contact) {
+    const name = req.body.name;
+    const phone = req.body.phone;
+    if (phone) contact.phone = phone;
+    if (name) contact.name = name;
+    res.status(200).send(contactsJson());
+  } else {
+    res.sendStatus(400);
   }
 });
 
