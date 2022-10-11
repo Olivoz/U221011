@@ -16,7 +16,7 @@ function appendElement(target, elementName, content, id) {
 
 function appendContact(contact) {
   const tableEntry = appendElement(contactsTableElement, "tr");
-  contact.tableEntry = tableEntry;
+  contact.element = tableEntry;
   contact.nameElement = appendElement(tableEntry, "td", contact.name);
   contact.phoneElement = appendElement(tableEntry, "td", contact.phone);
   appendElement(tableEntry, "td", contact.email);
@@ -67,7 +67,7 @@ function deleteContact(contact) {
 function loadContacts() {
   currentlyEditing = null;
   contacts.forEach((contact) => {
-    if (contact.tableEntry) contact.tableEntry.remove();
+    if (contact.element) contact.element.remove();
   });
 
   fetch("/contacts")
@@ -87,18 +87,33 @@ function displayContacts() {
 function saveContact() {
   if (!currentlyEditing) return;
   const contact = currentlyEditing.contact;
+
+  if (currentlyEditing.new) {
+    saveNewContact(contact);
+    return;
+  }
+
   const element = currentlyEditing.element;
 
   const inputFields = element.getElementsByTagName("input");
   Array.from(inputFields).forEach((inputField) => {
     const newDisplayElement = createElement("td", inputField.value);
     element.replaceChild(newDisplayElement, inputField);
-    if (inputField.id == "name") {
-      contact.name = inputField.value;
-      contact.nameElement = newDisplayElement;
-    } else if (inputField.id == "phone") {
-      contact.phone = inputField.value;
-      contact.phoneElement = newDisplayElement;
+
+    switch (inputField.id) {
+      case "name":
+        contact.name = inputField.value;
+        contact.nameElement = newDisplayElement;
+        break;
+
+      case "phone":
+        contact.phone = inputField.value;
+        contact.phoneElement = newDisplayElement;
+        break;
+
+      case "email":
+        contact.email = inputField.value;
+        break;
     }
   });
 
@@ -115,4 +130,54 @@ function saveContact() {
   });
 
   currentlyEditing = null;
+}
+
+function saveNewContact(contact) {
+  const element = contact.element;
+  const inputFields = element.getElementsByTagName("input");
+  Array.from(inputFields).forEach((inputField) => {
+    switch (inputField.id) {
+      case "name":
+        contact.name = inputField.value;
+        break;
+
+      case "phone":
+        contact.phone = inputField.value;
+        break;
+
+      case "email":
+        contact.email = inputField.value;
+        break;
+    }
+  });
+
+  element.remove();
+  appendContact(contact);
+
+  fetch("/contacts", {
+    method: "POST",
+    body: JSON.stringify({
+      name: contact.name,
+      phone: contact.phone,
+      email: contact.email,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  currentlyEditing = null;
+}
+
+function newContact() {
+  if (currentlyEditing) return;
+  const tableEntry = appendElement(contactsTableElement, "tr");
+  currentlyEditing = {
+    element: tableEntry,
+    contact: { element: tableEntry },
+    new: true,
+  };
+  tableEntry.appendChild(createEditElement(null, "Name"));
+  tableEntry.appendChild(createEditElement(null, "Phone"));
+  tableEntry.appendChild(createEditElement(null, "Email"));
 }
