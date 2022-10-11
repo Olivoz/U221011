@@ -1,4 +1,5 @@
 let contacts = [];
+let currentlyEditing;
 
 function createElement(elementName, content, id) {
   let element = document.createElement(elementName);
@@ -28,6 +29,9 @@ function appendContact(contact) {
   };
 
   editButton.onclick = () => {
+    if (currentlyEditing) return;
+    currentlyEditing = { element: tableEntry, contact: contact };
+
     tableEntry.replaceChild(
       createEditElement(contact.name, "Name"),
       nameElement
@@ -44,6 +48,7 @@ function createEditElement(value, placeholder) {
   const editElement = document.createElement("input");
   editElement.value = value;
   editElement.placeholder = placeholder;
+  editElement.id = placeholder.toLowerCase();
 
   return editElement;
 }
@@ -71,4 +76,27 @@ function displayContacts() {
   contacts.forEach((contact) => {
     appendContact(contact);
   });
+}
+
+function saveContact() {
+  if (!currentlyEditing) return;
+  const contact = currentlyEditing.contact;
+  const element = currentlyEditing.element;
+
+  const inputFields = element.getElementsByTagName("input");
+  Array.from(inputFields).forEach((inputField) => {
+    if (inputField.id == "name") contact.name = inputField.value;
+    else if (inputField.id == "phone") contact.phone = inputField.value;
+    element.replaceChild(createElement("td", inputField.value), inputField);
+  });
+
+  fetch("/contacts", {
+    method: "PATCH",
+    body: JSON.stringify(contact),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  currentlyEditing = null;
 }
