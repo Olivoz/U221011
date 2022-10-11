@@ -16,6 +16,21 @@ function appendContact(contact) {
 
   const delButton = appendElement(tableEntry, "button", "Del");
   const editButton = appendElement(tableEntry, "button", "Edit");
+
+  delButton.onclick = () => {
+    deleteContact(contact);
+    tableEntry.remove();
+  };
+}
+
+function deleteContact(contact) {
+  fetch("/contacts", {
+    method: "DELETE",
+    body: JSON.stringify({ email: contact.email }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 }
 
 function loadContacts() {
