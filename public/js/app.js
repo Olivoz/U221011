@@ -55,6 +55,8 @@ function createEditElement(value, placeholder) {
 }
 
 function deleteContact(contact) {
+  contacts.splice(contacts.indexOf(contact), 1);
+  refreshTitle();
   fetch("/contacts", {
     method: "DELETE",
     body: JSON.stringify({ email: contact.email }),
