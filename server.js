@@ -37,6 +37,15 @@ app.patch("/contacts", (req, res) => {
   }
 });
 
+app.delete("/contacts", (req, res) => {
+  const email = req.body.email;
+  if (email && contacts.delete(email)) {
+    res.status(200).send(contactsJson());
+  } else {
+    res.sendStatus(400);
+  }
+});
+
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
