@@ -1,17 +1,22 @@
 let contacts = [];
 
-function appendElement(target, elementName, content, id) {
+function createElement(elementName, content, id) {
   let element = document.createElement(elementName);
   if (content) element.innerText = content;
   if (id) element.id = id;
+  return element;
+}
+
+function appendElement(target, elementName, content, id) {
+  const element = createElement(elementName, content, id);
   target.appendChild(element);
   return element;
 }
 
 function appendContact(contact) {
   const tableEntry = appendElement(contactsTableElement, "tr");
-  appendElement(tableEntry, "td", contact.name);
-  appendElement(tableEntry, "td", contact.phone);
+  const nameElement = appendElement(tableEntry, "td", contact.name);
+  const phoneElement = appendElement(tableEntry, "td", contact.phone);
   appendElement(tableEntry, "td", contact.email);
 
   const delButton = appendElement(tableEntry, "button", "Del");
@@ -21,6 +26,26 @@ function appendContact(contact) {
     deleteContact(contact);
     tableEntry.remove();
   };
+
+  editButton.onclick = () => {
+    tableEntry.replaceChild(
+      createEditElement(contact.name, "Name"),
+      nameElement
+    );
+
+    tableEntry.replaceChild(
+      createEditElement(contact.phone, "Phone"),
+      phoneElement
+    );
+  };
+}
+
+function createEditElement(value, placeholder) {
+  const editElement = document.createElement("input");
+  editElement.value = value;
+  editElement.placeholder = placeholder;
+
+  return editElement;
 }
 
 function deleteContact(contact) {
