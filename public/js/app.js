@@ -16,8 +16,8 @@ function appendElement(target, elementName, content, id) {
 
 function appendContact(contact) {
   const tableEntry = appendElement(contactsTableElement, "tr");
-  const nameElement = appendElement(tableEntry, "td", contact.name);
-  const phoneElement = appendElement(tableEntry, "td", contact.phone);
+  contact.nameElement = appendElement(tableEntry, "td", contact.name);
+  contact.phoneElement = appendElement(tableEntry, "td", contact.phone);
   appendElement(tableEntry, "td", contact.email);
 
   const delButton = appendElement(tableEntry, "button", "Del");
@@ -34,12 +34,12 @@ function appendContact(contact) {
 
     tableEntry.replaceChild(
       createEditElement(contact.name, "Name"),
-      nameElement
+      contact.nameElement
     );
 
     tableEntry.replaceChild(
       createEditElement(contact.phone, "Phone"),
-      phoneElement
+      contact.phoneElement
     );
   };
 }
@@ -85,14 +85,24 @@ function saveContact() {
 
   const inputFields = element.getElementsByTagName("input");
   Array.from(inputFields).forEach((inputField) => {
-    if (inputField.id == "name") contact.name = inputField.value;
-    else if (inputField.id == "phone") contact.phone = inputField.value;
-    element.replaceChild(createElement("td", inputField.value), inputField);
+    const newDisplayElement = createElement("td", inputField.value);
+    element.replaceChild(newDisplayElement, inputField);
+    if (inputField.id == "name") {
+      contact.name = inputField.value;
+      contact.nameElement = newDisplayElement;
+    } else if (inputField.id == "phone") {
+      contact.phone = inputField.value;
+      contact.phoneElement = newDisplayElement;
+    }
   });
 
   fetch("/contacts", {
     method: "PATCH",
-    body: JSON.stringify(contact),
+    body: JSON.stringify({
+      name: contact.name,
+      phone: contact.phone,
+      email: contact.email,
+    }),
     headers: {
       "Content-Type": "application/json",
     },
