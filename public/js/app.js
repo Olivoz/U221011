@@ -64,8 +64,9 @@ function deleteContact(contact) {
   });
 }
 
-function loadContacts() {
+function loadContacts(button) {
   currentlyEditing = null;
+  button.disabled = true;
   contacts.forEach((contact) => {
     if (contact.element) contact.element.remove();
   });
@@ -75,7 +76,8 @@ function loadContacts() {
     .then((json) => {
       contacts = json.contacts;
       displayContacts();
-    });
+    })
+    .then(() => (button.disabled = false));
 }
 
 function displayContacts() {
@@ -84,12 +86,13 @@ function displayContacts() {
   });
 }
 
-function saveContact() {
+function saveContact(button) {
   if (!currentlyEditing) return;
   const contact = currentlyEditing.contact;
+  button.disabled = true;
 
   if (currentlyEditing.new) {
-    saveNewContact(contact);
+    saveNewContact(contact, button);
     return;
   }
 
@@ -127,12 +130,12 @@ function saveContact() {
     headers: {
       "Content-Type": "application/json",
     },
-  });
+  }).then(() => (button.disabled = false));
 
   currentlyEditing = null;
 }
 
-function saveNewContact(contact) {
+function saveNewContact(contact, button) {
   const element = contact.element;
   const inputFields = element.getElementsByTagName("input");
   Array.from(inputFields).forEach((inputField) => {
@@ -153,6 +156,7 @@ function saveNewContact(contact) {
 
   element.remove();
   appendContact(contact);
+  contacts.push(contact);
 
   fetch("/contacts", {
     method: "POST",
@@ -164,7 +168,7 @@ function saveNewContact(contact) {
     headers: {
       "Content-Type": "application/json",
     },
-  });
+  }).then(() => (button.disabled = false));
 
   currentlyEditing = null;
 }
