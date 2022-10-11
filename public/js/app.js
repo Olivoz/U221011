@@ -76,6 +76,7 @@ function loadContacts() {
     .then((res) => res.json())
     .then((json) => {
       contacts = json.contacts;
+      refreshTitle();
       displayContacts();
     })
     .then(() => {
@@ -165,6 +166,7 @@ function saveNewContact(contact) {
   element.remove();
   appendContact(contact);
   contacts.push(contact);
+  refreshTitle();
 
   fetch("/contacts", {
     method: "POST",
@@ -195,4 +197,8 @@ function newContact() {
   tableEntry.appendChild(createEditElement(null, "Name"));
   tableEntry.appendChild(createEditElement(null, "Phone"));
   tableEntry.appendChild(createEditElement(null, "Email"));
+}
+
+function refreshTitle() {
+  titleElement.innerText = `Contacts Manager [${contacts.length}]`;
 }
